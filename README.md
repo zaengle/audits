@@ -1,2 +1,2 @@
-# audits
-A simple package to audit models
+# Audits
+A simple package to audit models.
