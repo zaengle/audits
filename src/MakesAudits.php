@@ -2,6 +2,7 @@
 
 namespace Zaengle\Audit;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 
@@ -42,31 +43,7 @@ trait MakesAudits
 
     public function trigger()
     {
-        $getActingUser = null;
-
-        if (Config::get('audits.with_authenticated_user')) {
-            if (count($authenticatable = Config::get('audits.auth_models')) == 1) {
-                if (
-                    $user = $authenticatable['with_guard']
-                        ? auth()->guard(key($authenticatable))->user()
-                        : auth()->user()
-                ) {
-                    $getActingUser = $user;
-                }
-            } elseif (count($authenticatables = Config::get('audits.auth_models')) > 1) {
-                foreach ($authenticatables as $key => $authenticatable) {
-                    if (
-                        $user = $authenticatable['with_guard']
-                            ? auth()->guard(key($authenticatable))->user()
-                            : auth()->user()
-                    ) {
-                        $getActingUser = $user;
-                    }
-                }
-            }
-        }
-
-        $this->persistAudit($this->auditData(), $getActingUser);
+        $this->persistAudit($this->auditData(), $this->setActingUser());
     }
 
     /**
@@ -92,5 +69,40 @@ trait MakesAudits
         $this->update([$this->columnName => $audits]);
 
         self::setEventDispatcher($dispatcher);
+    }
+
+    /**
+     * @return Authenticatable|null
+     */
+    private function setActingUser()
+    {
+        $actingUser = null;
+
+        if (Config::get('audits.with_authenticated_user')) {
+            if (count($authenticatable = Config::get('audits.auth_models')) == 1) {
+                if ($user = $this->getActingUser($authenticatable)) {
+                    $actingUser = $user;
+                }
+            } elseif (count($authenticatables = Config::get('audits.auth_models')) > 1) {
+                foreach ($authenticatables as $key => $authenticatable) {
+                    if ($user = $this->getActingUser($authenticatable)) {
+                        $actingUser = $user;
+                    }
+                }
+            }
+        }
+
+        return $actingUser;
+    }
+
+    /**
+     * @param array $authenticatable
+     * @return Authenticatable|null
+     */
+    private function getActingUser(array $authenticatable)
+    {
+        return $authenticatable['with_guard']
+            ? auth()->guard(key($authenticatable))->user()
+            : auth()->user();
     }
 }
