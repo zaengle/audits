@@ -62,7 +62,10 @@ trait MakesAudits
         ];
 
         if (!! $user) {
-            $newAudit['updated_by'] = $user->getKey();
+            $newAudit['updated_by'] = [
+                'id' => $user->getKey(),
+                'type' => get_class($user),
+            ];
         }
 
         array_push($audits, $newAudit);
