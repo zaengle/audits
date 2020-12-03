@@ -1,5 +1,5 @@
 # Audits
-A simple package to audit models.
+This packages records changes to a Laravel model and stores them in a json column on the model.
 
 ## Usage
 
@@ -16,3 +16,9 @@ protected $casts = [
     'audits' => 'json',
 ];
 ```
+
+
+
+## Attributions
+
+If you are looking for a more robust solution, this package is worth checking out: [Laravel Auditor](http://www.laravel-auditing.com/docs/9.0/auditor)
