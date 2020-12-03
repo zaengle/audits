@@ -1,6 +1,8 @@
 {
   "name": "zaengle/audits",
   "description": "A package to manage model audits",
+  "license": "MIT",
+  "keywords": ["laravel", "audit"],
   "authors": [
     {
       "name": "Zaengle",
