@@ -7,7 +7,7 @@ return [
     'auth_models' => [
         'user' => [
             'model' => \App\User::class,
-            'with_guard' => false,
+            'guard' => null,
         ]
     ]
 ];

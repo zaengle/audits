@@ -3,7 +3,7 @@
 namespace Zaengle\Audit;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Config;
  */
 trait MakesAudits
 {
-    protected $columnName = 'audits';
+    protected $auditableColumn = 'audits';
 
-    protected static function boot()
+    protected static function bootMakesAudits()
     {
         foreach (static::getAuditHooks() as $hook) {
-            static::$hook(function (Model $model) {
+            static::$hook(function ($model) {
                 $model->trigger();
             });
         }
@@ -33,6 +33,11 @@ trait MakesAudits
         ];
     }
 
+    public function trigger()
+    {
+        $this->persistAudit($this->auditData(), $this->setActingUser());
+    }
+
     /**
      * @return array
      */
@@ -41,32 +46,31 @@ trait MakesAudits
         return $this->getAttributes();
     }
 
-    public function trigger()
-    {
-        $this->persistAudit($this->auditData(), $this->setActingUser());
-    }
-
     /**
      * @param array $data
      * @param $user
      */
     private function persistAudit(array $data = [], $user = null)
     {
-        $audits = $this->attributes[$this->columnName] ?: [];
+        unset($data[$this->auditableColumn]);
+
+        $audits = json_decode(Arr::get($this->attributes, $this->auditableColumn, null), true) ?: [];
 
         $newAudit = [
             'updated_at' => now()->toDateTimeString(),
             'data' => $data,
         ];
 
-        $newAudit['updated_by'] = $user ? $user->getKey() : null;
+        if (!! $user) {
+            $newAudit['updated_by'] = $user->getKey();
+        }
 
         array_push($audits, $newAudit);
 
         $dispatcher = self::getEventDispatcher();
         self::unsetEventDispatcher();
 
-        $this->update([$this->columnName => $audits]);
+        $this->update([$this->auditableColumn => $audits]);
 
         self::setEventDispatcher($dispatcher);
     }
@@ -101,8 +105,8 @@ trait MakesAudits
      */
     private function getActingUser(array $authenticatable)
     {
-        return $authenticatable['with_guard']
-            ? auth()->guard(key($authenticatable))->user()
+        return Arr::get($authenticatable, 'guard', null)
+            ? auth()->guard($authenticatable['guard'])->user()
             : auth()->user();
     }
 }

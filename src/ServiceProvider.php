@@ -23,7 +23,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/audits.php' => config_path('audits.php'),
+                __DIR__ . '/../config/audits.php' => config_path('audits.php'),
             ], 'config');
         }
     }
@@ -35,7 +35,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/audits.php', 'audits.php');
+        $this->mergeConfigFrom(__DIR__ . '/../config/audits.php', 'audits');
     }
 
     /**
