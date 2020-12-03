@@ -3,6 +3,8 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/zaengle/audits.svg?style=flat-square)](https://packagist.org/packages/zaengle/audits)
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
+![audit header](audit-header.jpg)
+
 # Audits
 This packages records changes to a Laravel model and stores them in a json column on the model.
 
