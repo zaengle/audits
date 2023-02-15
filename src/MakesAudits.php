@@ -6,14 +6,11 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Trait MakesAudits
- */
 trait MakesAudits
 {
-    protected $auditableColumn = 'audits';
+    protected string $auditableColumn = 'audits';
 
-    protected static function bootMakesAudits()
+    protected static function bootMakesAudits(): void
     {
         foreach (static::getAuditHooks() as $hook) {
             static::$hook(function ($model) {
@@ -22,10 +19,7 @@ trait MakesAudits
         }
     }
 
-    /**
-     * @return array
-     */
-    protected static function getAuditHooks()
+    protected static function getAuditHooks(): array
     {
         return [
             'created',
@@ -33,24 +27,17 @@ trait MakesAudits
         ];
     }
 
-    public function trigger()
+    public function trigger(): void
     {
         $this->persistAudit($this->auditData(), $this->setActingUser());
     }
 
-    /**
-     * @return array
-     */
-    private function auditData()
+    private function auditData(): array
     {
         return $this->getAttributes();
     }
 
-    /**
-     * @param array $data
-     * @param $user
-     */
-    private function persistAudit(array $data = [], $user = null)
+    private function persistAudit(array $data = [], $user = null): void
     {
         unset($data[$this->auditableColumn]);
 
@@ -68,7 +55,7 @@ trait MakesAudits
             ];
         }
 
-        array_push($audits, $newAudit);
+        $audits[] = $newAudit;
 
         $dispatcher = self::getEventDispatcher();
         self::unsetEventDispatcher();
@@ -78,10 +65,7 @@ trait MakesAudits
         self::setEventDispatcher($dispatcher);
     }
 
-    /**
-     * @return Authenticatable|null
-     */
-    private function setActingUser()
+    private function setActingUser(): ?Authenticatable
     {
         $actingUser = null;
 
@@ -102,11 +86,7 @@ trait MakesAudits
         return $actingUser;
     }
 
-    /**
-     * @param array $authenticatable
-     * @return Authenticatable|null
-     */
-    private function getActingUser(array $authenticatable)
+    private function getActingUser(array $authenticatable): ?Authenticatable
     {
         return Arr::get($authenticatable, 'guard', null)
             ? auth()->guard($authenticatable['guard'])->user()
