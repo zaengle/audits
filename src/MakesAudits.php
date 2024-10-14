@@ -32,7 +32,7 @@ trait MakesAudits
         $this->persistAudit($this->auditData(), $this->setActingUser());
     }
 
-    private function auditData(): array
+    protected function auditData(): array
     {
         return $this->getAttributes();
     }
