@@ -80,7 +80,7 @@ trait MakesAudits
     {
         unset($data[$this->auditableColumn]);
 
-        $audits = json_decode(Arr::get($this->attributes, $this->auditableColumn, null), true) ?: [];
+        $audits = json_decode(Arr::get($this->attributes, $this->auditableColumn, '[]'), true) ?: [];
 
         $newAudit = [
             'updated_at' => now()->toDateTimeString(),
