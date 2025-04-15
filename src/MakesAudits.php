@@ -10,6 +10,19 @@ trait MakesAudits
 {
     protected string $auditableColumn = 'audits';
 
+    public function initializeMakesAudits(): void
+    {
+        if (Config::get('audits.fillable_by_default')) {
+            if (! isset($this->casts[$this->auditableColumn])) {
+                $this->casts[$this->auditableColumn] = 'array';
+            }
+
+            if (! isset($this->fillable) || ! in_array($this->auditableColumn, $this->fillable, true)) {
+                $this->fillable[] = $this->auditableColumn;
+            }
+        }
+    }
+
     protected static function bootMakesAudits(): void
     {
         foreach (static::getAuditHooks() as $hook) {
@@ -29,7 +42,33 @@ trait MakesAudits
 
     public function trigger(): void
     {
-        $this->persistAudit($this->auditData(), $this->setActingUser());
+        $data = $this->auditData();
+
+        if (! $this->shouldTriggerAudit($data)) {
+            return;
+        }
+
+        $this->persistAudit($data, $this->setActingUser());
+    }
+
+    public function manualAudit(array $auditData): void
+    {
+        self::withoutEvents(function () use ($auditData) {
+            $column = $this->auditableColumn;
+
+            $this->forceFill([
+                $this->auditableColumn => array_merge($this->$column ?? [], [
+                    $auditData
+                ]),
+            ]);
+
+            $this->save();
+        });
+    }
+
+    protected function shouldTriggerAudit(array $data): bool
+    {
+        return true;
     }
 
     protected function auditData(): array
