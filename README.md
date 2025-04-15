@@ -13,18 +13,38 @@ This packages records changes to a Laravel model and stores them in a json colum
 Use the `MakesAudits` trait on your model.
 
 Next add a nullable json column to your model. By default the package will look for a column called `audits`. To override the auditable column, change the `$auditableColumn` property on your model.
-```
+```php
 protected $auditableColumn = 'audits';
 ```
 
 Finally add a `json` cast for the auditable column.
-```
+```php
 protected $casts = [
     'audits' => 'json',
 ];
 ```
 
+This is all you need to get started. The package will automatically record changes to the model and store them in the `audits` column.
 
+If you ever need to save arbitrary data to the audit log you may do so by calling the `manualAudit` method.
+```php
+$model = Model::find(1);
+
+$model->manualAudit([
+    'field' => 'value',
+]);
+```
+
+Occasionally you may want to bypass writing to the audit log. In those cases you can override the `shouldTriggerAudit` function on your model like so:
+
+```php
+// MyModel.php
+
+public function shouldTriggerAudit(): bool
+{
+    return $someCondition ? true : false;
+}
+```
 
 ## Attributions
 
