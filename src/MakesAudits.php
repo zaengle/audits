@@ -5,7 +5,6 @@ namespace Zaengle\Audit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 
 trait MakesAudits
 {
@@ -97,9 +96,12 @@ trait MakesAudits
 
         $audits[] = $newAudit;
 
-        DB::table($this->getTable())
-            ->where($this->getKeyName(), $this->getKey())
-            ->update([$this->auditableColumn => json_encode($audits)]);
+        $dispatcher = self::getEventDispatcher();
+        self::unsetEventDispatcher();
+
+        $this->update([$this->auditableColumn => $audits]);
+
+        self::setEventDispatcher($dispatcher);
     }
 
     private function setActingUser(): ?Authenticatable
